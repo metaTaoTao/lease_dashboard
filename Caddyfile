@@ -1,6 +1,7 @@
-www.wslease.online {
-    redir https://wslease.online{url}
-}
 wslease.online {
     reverse_proxy localhost:8000
+}
+
+www.wslease.online {
+    redir https://wslease.online{uri}
 }
