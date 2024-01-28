@@ -14,11 +14,18 @@
     <title>Upload Excel File</title>
 </head>
 <body>
-    <h2>Upload Excel File</h2>
+    <h2>上传数据</h2>
     <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="excel_file">Choose Excel File:</label>
+        <label for="excel_file">选择Excel文件:</label>
         <input type="file" name="excel_file" id="excel_file" accept=".xlsx, .xls">
-        <button type="submit">Upload</button>
+        <button type="submit">上传</button>
+    </form>
+
+    <h2>更新数据</h2>
+    <form action="/update_data" method="post" enctype="multipart/form-data">
+        <label for="excel_file">选择Excel文件::</label>
+        <input type="file" name="excel_file" id="excel_file" accept=".xlsx, .xls">
+        <button type="submit">更新</button>
     </form>
 </body>
 </html>

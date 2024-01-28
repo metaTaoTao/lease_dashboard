@@ -39,3 +39,42 @@ class OrderSummary(db.Model):
 
     def __repr__(self):
         return str(self.order_id)
+
+
+class Cashflow(db.Model):
+    __tablename__ = 'Cashflow'
+    # cf_df = pd.DataFrame(columns=['order_id', 'seq','amount','due_dt','actual_pay_dt'])
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(64))
+    seq = db.Column(db.Integer)
+    amount = db.Column(db.Float)
+    due_dt = db.Column(db.DATE)
+    actual_pay_dt = db.Column(db.DATE)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class ClientInfo(db.Model):
+    __tablename__ = 'ClientInfo'
+
+    # client_info = pd.DataFrame(columns=['order_id', 'order_dt', 'maturity_dt','term','tenor','official_px','buydown','deposit'])
+    order_id = db.Column(db.String(64), primary_key=True)
+    order_dt = db.Column(db.DATE)
+    maturity_dt = db.Column(db.DATE)
+    term = db.Column(db.Integer)
+    tenor = db.Column(db.Integer)
+    official_px = db.Column(db.Float)
+    buydown = db.Column(db.Float)
+    deposit = db.Column(db.Float)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.order_id)
