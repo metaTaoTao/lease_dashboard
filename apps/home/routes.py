@@ -81,11 +81,14 @@ def create_orders_based_summary(df):
 
 def get_new_orders_summary(new_df):
     old_df = OrderAnalytics().order_summary_df
-    old_keys = old_df['order_id'].unique().tolist()
-    new_keys = new_df['order_id'].unique().tolist()
-    diff_keys = list(set(old_keys).symmetric_difference(set(new_keys)))
-    res = new_df.loc[new_df['order_id'].isin(diff_keys)]
-    return res
+    if not old_df.empty:
+        old_keys = old_df['order_id'].unique().tolist()
+        new_keys = new_df['order_id'].unique().tolist()
+        diff_keys = list(set(old_keys).symmetric_difference(set(new_keys)))
+        res = new_df.loc[new_df['order_id'].isin(diff_keys)]
+        return res
+    else:
+        return new_df
 
 
 def insert_client_info(df):
