@@ -8,7 +8,7 @@ from apps.home import blueprint
 from apps.home.order_analytics import OrderAnalytics
 from apps.home.models import OrderSummary, ClientInfo, Cashflow
 from sqlalchemy import text
-from flask import render_template, redirect, request, url_for
+from flask import render_template, redirect, request, url_for, jsonify
 from flask_login import login_required
 from jinja2 import TemplateNotFound
 from apps import db
@@ -80,7 +80,7 @@ def create_orders_based_summary(df):
 
 
 def get_new_orders_summary(new_df):
-    old_df = OrderAnalytics().order_summary_df
+    old_df = OrderAnalytics().get_order_summary()
     if not old_df.empty:
         old_keys = old_df['order_id'].unique().tolist()
         new_keys = new_df['order_id'].unique().tolist()
@@ -120,6 +120,12 @@ def insert_cashflow(df):
     except Exception as e:
         db.session.rollback()
         log.exception(str(e))
+
+@blueprint.route('/update_cashflow_chart')
+def update_cashflow_chart():
+    analytics = OrderAnalytics()
+    data = analytics.get_cashflow_chart_data()
+    return jsonify(data)
 
 
 @blueprint.route('/upload', methods=['POST'])

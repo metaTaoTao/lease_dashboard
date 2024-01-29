@@ -28,8 +28,9 @@ class OrderAnalytics:
         if isinstance(order_time, datetime.datetime):
             order_dt = order_time.date()
         else:
-            order_dt = datetime.datetime.strptime(order_time.replace('\n',''), '%Y-%m-%d %H:%M:%S').date()
+            order_dt = datetime.datetime.strptime(order_time.replace('\n', ''), '%Y-%m-%d %H:%M:%S').date()
         return order_dt
+
     def get_total_ar(self, cashflows, client_infos):
         res = []
         try:
@@ -42,7 +43,7 @@ class OrderAnalytics:
                 res.append(int(net_ar))
             return res
         except Exception as e:
-            return [0,0,0]
+            return [0, 0, 0]
 
     def get_cashflows(self):
         try:
@@ -89,7 +90,7 @@ class OrderAnalytics:
             first_none = cf[cf['actual_pay_dt'].isnull()].iloc[0]
             first_none_due_dt = first_none['due_dt']
             if first_none_due_dt < self.today:
-                default +=1
+                default += 1
         return default
 
     def get_total_phone_by_date(self, df):
@@ -100,7 +101,35 @@ class OrderAnalytics:
                 res.append(phone_num)
             return res
         else:
-            return [0,0,0]
+            return [0, 0, 0]
+
+    def _generate_json_format(self, df_contractual, df_real):
+
+        res = {
+            "daily": {
+                "datasets": [ {"data": df_contractual['amount'].tolist(), "label":"应收账款"},
+                              {"data": df_real['amount'].tolist()+[None for i in range(len(df_contractual)-len(df_real))], "label":"实收账款"}],
+                "labels": [x.strftime("%Y-%m-%d") for x in df_contractual.index.tolist()]
+            }
+        }
+
+        return res
+    def get_cashflow_chart_data(self):
+        cashflows = self.get_cashflows()
+        df_contractual =pd.pivot_table(cashflows, values='amount', index=['due_dt'], aggfunc="sum")
+        df_real = pd.pivot_table(cashflows, values='amount', index=['actual_pay_dt'], aggfunc="sum")
+        data = self._generate_json_format(df_contractual,df_real)
+
+        # data = {
+        #     "daily": {
+        #         "datasets": [{"data": [10, 80, 30, 80, 20, 60, 70], "label": "应收账款"},
+        #                      {"data": [8, 70, 34, 11, 90, 66, 71], "label": "实收账款"}],
+        #         "labels": ['January', 'February', 'March', 'April', 'May', 'June', 'July']},  # x-axis
+        # }
+
+        return data
+
+
     def run(self):
         order_summary_df = self.get_order_summary()
         cashflows = self.get_cashflows()
@@ -112,20 +141,20 @@ class OrderAnalytics:
         tomorrow_cash = self.get_cash_by_date(cashflows, client_infos, self.tomorrow)
         default_num = self.get_default_num(cashflows)
         invest = self.total_capital - self.balance
-        profit = (ar_list[0] - invest)/invest
+        profit = (ar_list[0] - invest) / invest
         data = {
             'segment': 'index',
-            'total_phone':  "{:,}".format(phone_nums[0]),
-            'phone_num_dod': "{:,}".format(phone_nums[0]-phone_nums[1]),
-            'phone_num_wtd': "{:,}".format(phone_nums[0]-phone_nums[2]),
+            'total_phone': "{:,}".format(phone_nums[0]),
+            'phone_num_dod': "{:,}".format(phone_nums[0] - phone_nums[1]),
+            'phone_num_wtd': "{:,}".format(phone_nums[0] - phone_nums[2]),
             'total_capital': "{:,}".format(self.total_capital),
             'balance': "{:,}".format(self.balance),
-            'total_ar':  "{:,}".format(ar_list[0]),
-            'ar_dod': "{:,}".format(ar_list[0]-ar_list[1]),
+            'total_ar': "{:,}".format(ar_list[0]),
+            'ar_dod': "{:,}".format(ar_list[0] - ar_list[1]),
             'ar_wtd': "{:,}".format(ar_list[0] - ar_list[2]),
-            'today_cash':  "{:,}".format(today_cash),
-            'tomorrow_cash':  "{:,}".format(tomorrow_cash),
-            'profit':"{:.1f}%".format(profit * 100),
+            'today_cash': "{:,}".format(today_cash),
+            'tomorrow_cash': "{:,}".format(tomorrow_cash),
+            'profit': "{:.1f}%".format(profit * 100),
             'default_num': default_num
         }
         return data

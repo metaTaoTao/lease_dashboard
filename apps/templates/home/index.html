@@ -244,13 +244,13 @@
                 </div>
                 <div class="col">
                   <ul class="nav nav-pills justify-content-end">
-                    <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 10, 30, 15, 40, 20, 60, 60]}]}}' data-prefix="$" data-suffix="k">
+                    <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales-dark">
                       <a href="#" class="nav-link py-2 px-3 active" data-toggle="tab">
-                        <span class="d-none d-md-block">Month</span>
+                        <span class="d-none d-md-block">Daily</span>
                         <span class="d-md-none">M</span>
                       </a>
                     </li>
-                    <li class="nav-item" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 5, 25, 10, 30, 15, 40, 40]}]}}' data-prefix="$" data-suffix="k">
+                    <li class="nav-item" data-toggle="chart" data-target="#chart-sales-dark">
                       <a href="#" class="nav-link py-2 px-3" data-toggle="tab">
                         <span class="d-none d-md-block">Week</span>
                         <span class="d-md-none">W</span>
@@ -517,7 +517,69 @@
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
 
-  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
-  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+    <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+    <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        var ctx = document.getElementById('chart-sales-dark').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line', // 这里使用线图，根据需要更改
+            data: {
+                labels: [], // 示例X轴标签
+                datasets: [{
+                    label: '', // 数据集名称
+                    data: [], // 示例数据点
+                    // backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    // borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true, // Y轴从0开始
+                        // 根据需要调整更多Y轴设置
+                    },
+                    x: {
+                        // 根据需要调整X轴设置
+                    }
+                },
+            responsive: true, // 开启响应式布局
+            maintainAspectRatio: false // 如果你想在容器大小变化时，图表高度也跟着变化，可以设置为false
+    }
+        });
+
+        // 定义函数来更新图表
+        function updateChartData(timeFrame) {
+            fetch('/update_cashflow_chart') // 调用后端API
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received data from backend:", data); // 打印从后端接收到的数据
+                    chart.data = data[timeFrame]; // 根据时间帧更新数据
+                    console.log("Chart data after update:", chart.data); // 打印更新后的图表数据
+                    chart.update(); // 更新图表
+                });
+        }
+
+        // 为"Month"和"Week"选项卡添加点击事件监听器
+       var monthTab = document.querySelector('.nav-item[data-target="#chart-sales-dark"][data-update*="Daily"]');
+       if (monthTab) {
+            monthTab.addEventListener('click', function() {
+                updateChartData('daily');
+            });
+        }
+
+        var weekTab = document.querySelector('.nav-item[data-target="#chart-sales-dark"][data-update*="Week"]');
+        if (weekTab) {
+            weekTab.addEventListener('click', function() {
+                updateChartData('week');
+            });
+        }
+
+        // 初始加载时更新数据
+        updateChartData('daily'); // 默认加载月数据
+    });
+    </script>
 
 {% endblock javascripts %}
